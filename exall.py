@@ -3,23 +3,30 @@
 # Author: @chaign_c
 
 from contextlib import ContextDecorator
+import functools
+import inspect
+import builtins
 
 # ==========================================================
 # Exception manager based on decorator/context/callback.
-# ping me if you like this part, I might push it on pypi.
-# Using this we can separate code logic from error handling, 
+# Using this will separate code logic from error handling, 
 # the goal would be to reduce code duplication and ease development.
 # ==========================================================
 
 def do_exall(fn, exception, callback):
-    """ Call *callback* on *exception* when *fn* is called """
+    """ Call *callback* when *exception* is raised by the function *fn* """
+    # print("DO EXALL %r" % callback)
     if not isinstance(exception, tuple):
         exception = (exception,)
     def new_function(*args, **kwargs):
+        # TODO: can you delete this first line ? .. if context is shared between try and finally ..
+        ret_value = None
         try:
-            fn(*args, **kwargs)
+            ret_value = fn(*args, **kwargs)
         except exception as e:
             callback(e)
+        finally:
+            return ret_value
     new_function.__wrapped__ = fn
     return new_function
 
@@ -31,46 +38,60 @@ def the_real_module(module):
 class exall(ContextDecorator):
     """
         A context and decorator for do_exall.
-        Call *callback* on *exception* when *fn* is called. 
+        Call *callback* when *exception* is raised by the function *fn*
     """
     def __init__(self, fn, exception, callback):
         super().__init__()
         self.fn = fn
-        self.exception = exception
-        self.callback = callback
-        # self.fn_module = globals()[fn.__module__]
-        self.fn_module = __import__(the_real_module(fn.__module__))
-        self.fn_name = fn.__name__
+        self.decorator = do_exall(self.fn, exception, callback)
+        self.locals = inspect.currentframe().f_back.f_locals
 
     def __enter__(self):
-        print("Enter exall({}..)".format(self.fn_name))
-        setattr(self.fn_module,  self.fn_name, do_exall(self.fn, self.exception, self.callback))
+        # print("Exall.enter {s.fn.__module__}.{s.fn.__name__}".format(s=self))
+        self.fn_module = __import__(the_real_module(self.fn.__module__))
+        setattr(self.fn_module,  self.fn.__name__, self.decorator)
+        if self.fn.__name__ in self.locals and self.locals[self.fn.__name__] is self.fn:
+            self.locals[self.fn.__name__] = self.decorator
+        elif hasattr(builtins, self.fn.__name__) and getattr(builtins, self.fn.__name__) is self.fn:
+            setattr(builtins, self.fn.__name__, self.decorator)
 
     def __exit__(self, *exc):
-        print("Exit exall({}..)".format(self.fn_name))
-        setattr(self.fn_module,  self.fn_name, self.fn)
+        setattr(self.fn_module,  self.fn.__name__, self.fn)
+        if self.fn.__name__ in self.locals and self.locals[self.fn.__name__] is self.decorator:
+            self.locals[self.fn.__name__] = self.fn
+        elif hasattr(builtins, self.fn.__name__) and getattr(builtins, self.fn.__name__) is self.decorator:
+            setattr(builtins, self.fn.__name__, self.fn)
+        # print("Exall.exit {s.fn.__module__}.{s.fn.__name__}".format(s=self))
 
 # =========================================================
-# Callbacks: several basic way of handling exception
+# Callbacks: several basic way of handling exception
 # =========================================================
 
 import traceback
 from pprint import pprint
-import sys
+import os
 
 def print_traceback(exception):
     print(exception)
     pprint(traceback.extract_stack()[:-2])
 
+class Color:
+    orange = "\x1B[33m"
+    red = "\x1B[31m"
+    normal = "\x1B[0m"
 def print_warning(exception):
     location = traceback.extract_stack()[-3]
-    print("WARNING: {exception}, ==> {location}".format(exception=exception, location=location))
+    print("{c.orange}WARNING{c.normal}: {l.filename}:{l.lineno} {l.line} => {c.orange}{exception}{c.normal} ".format(
+        exception=exception, l=location, c=Color))
 
 def ignore(exception):
     pass
 
 def print_error(exception):
-    pprint(traceback.extract_stack()[:-2])
-    location = traceback.extract_stack()[-3]
-    print("ERROR: {exception}, ==> {location}".format(exception=exception, location=location))
-    sys.exit(1)
+    # pprint(traceback.extract_stack()[:-2])
+    locations = traceback.extract_stack()[:-2]
+    for i, location in enumerate(locations):
+        print("{c.red}{i}=>{c.normal} {l.filename}:{l.lineno} {l.line}".format(
+            exception=exception, l=location, i=i * " ", c=Color))
+    print("{c.red}ERROR{c.normal}: {exception}".format(exception=exception, c=Color))
+    os._exit(1)

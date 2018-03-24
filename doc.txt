@@ -1,1 +1,23 @@
 https://github.com/ajalt/fuckitpy
+
+
+test:
+
+catch exception from an nested module calling the source function
+
+catch exception with src=a_decorated_fonction
+
+catch exception with src=local_fonction
+
+catch exception with src=builtins (os/posix and local builtins)
+
+catch exception with src=the_current_function/context (when no src is specified)
+
+catch exception on instancied object (exemple socket)
+
+catch exception with src= partial fonction ?
+
+catch exception with src=import as
+
+catch exception with src= from taat import tata as tutu
+
