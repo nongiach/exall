@@ -7,6 +7,9 @@ import sys
 
 ################### unlink example ############################
 
+""" if os.unlink raises a FileNotFoundError then ignore callback will be called
+    and the execution of the function will carry on.
+"""
 def unlink_example():
     """ We want all unlink to be executed even if the first one fails"""
     with contextlib.suppress(FileNotFoundError):

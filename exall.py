@@ -13,20 +13,17 @@ import builtins
 # the goal would be to reduce code duplication and ease development.
 # ==========================================================
 
-def do_exall(fn, exception, callback):
+def do_exall(fn, exceptions, callback):
     """ Call *callback* when *exception* is raised by the function *fn* """
-    # print("DO EXALL %r" % callback)
-    if not isinstance(exception, tuple):
-        exception = (exception,)
+    if not isinstance(exceptions, tuple):
+        exceptions = (exceptions,)
     def new_function(*args, **kwargs):
         # TODO: can you delete this first line ? .. if context is shared between try and finally ..
         ret_value = None
         try:
-            ret_value = fn(*args, **kwargs)
-        except exception as e:
+            return fn(*args, **kwargs)
+        except exceptions as e:
             callback(e)
-        finally:
-            return ret_value
     new_function.__wrapped__ = fn
     return new_function
 

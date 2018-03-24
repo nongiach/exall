@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
-import exall
+from exall import exall, do_exall, print_warning, ignore, print_error
 import os
 from subprocess import check_call, CalledProcessError
 import subprocess
-import inspect
 
 ################### unlink example ############################
 
-@exall.exall(os.unlink, FileNotFoundError, exall.ignore)
+""" if os.unlink raises a FileNotFoundError then ignore callback will be called
+    and the execution of the function will carry on.
+"""
+@exall(os.unlink, FileNotFoundError, ignore)
 def unlink_example():
     print("test")
     os.unlink("this_file_doesnt_exist_exception_is_ignored")
@@ -26,30 +28,23 @@ and continue the program.
 Here we handle two different exceptions.
 """
 
-@exall.exall(check_call, FileNotFoundError, exall.print_warning)
-def test_check_call():
-    print("check_call here")
-    # tata = exall.do_exall(check_call, FileNotFoundError, exall.print_warning)
-    # print(inspect.getargspec(tata))
-    # print(inspect.getargspec(check_call))
-    # check_call.__code__ = tata.__code__
+with exall(check_call, (CalledProcessError, FileNotFoundError), print_warning):
     check_call("ll")
     print("do something else")
     print("isn't it beautiful ?")
-
-test_check_call()
 
 ################## mkdir example #############################
 
 """ If one of the mkdir fails then print an error and exit the program """
 """ here we setup a global behaviour """
-os.mkdir = exall.do_exall(os.mkdir, FileExistsError, exall.print_error)
+os.mkdir = do_exall(os.mkdir, FileExistsError, print_error)
 
-def mkdir_tata():
-    os.mkdir("/tata")
+def do_mkdirs():
+    os.mkdir("/tmp")
+    os.mkdir("/tmp/ok")
 
-mkdir_tata()
-os.mkdir("/tmp/ok")
+do_mkdirs()
+
 
 ### Setup your own callback and multiple exception handling ####
 
