@@ -1,13 +1,13 @@
 # Exall
-Ease exception handling in python
+Ease exception handling in python.
 
 # Except them All
 Exall is an exception manager based on decorator/context/callback.
-Exall separates code logic from error handling, this reduce code duplication and ease development.
+Exall separates code logic from error handling, this reduces code duplication and ease development.
 
 
 # Examples
-Exall easily create rules to associate Exceptions with callbacks using decorators.
+Exall easily creates rules to associate Exceptions with callbacks using decorators.
 
 | With Exall | Without Exall |
 | --- |--- |
