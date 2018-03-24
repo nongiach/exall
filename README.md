@@ -1,4 +1,4 @@
-# exall
+# Exall
 Ease exception handling in python
 
 # Except them All
