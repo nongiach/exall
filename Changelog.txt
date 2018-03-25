@@ -1,0 +1,16 @@
+24/03/2018
+push on pypi
+
+25/03/2018
+Add Changelog.txt
+limit imported symbol (__all__)
+
+
+TODO:
+unit test: // make it work of all cases
+- nested module calling the source function
+- catch exception with src=a_decorated_function
+- catch exception with src=a_partial_function
+- catch exception with src=local_function
+- catch exception with src=the_current_function/context (when no src is specified)
+- catch exception on instancied object (exemple socket)

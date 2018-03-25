@@ -7,6 +7,9 @@ import functools
 import inspect
 import builtins
 
+__all__ = ["do_exall", "exall", "Color",
+        "ignore", "print_traceback", "print_warning", "print_error"]
+
 # ==========================================================
 # Exception manager based on decorator/context/callback.
 # Using this will separate code logic from error handling, 
@@ -76,6 +79,7 @@ class Color:
     orange = "\x1B[33m"
     red = "\x1B[31m"
     normal = "\x1B[0m"
+
 def print_warning(exception):
     location = traceback.extract_stack()[-3]
     print("{c.orange}WARNING{c.normal}: {l.filename}:{l.lineno} {l.line} => {c.orange}{exception}{c.normal} ".format(

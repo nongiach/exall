@@ -70,19 +70,19 @@ shouldnt_raise(exall_local_open)
 # ### catch exception on instancied object (exemple socket)
 # ### TODO
 
-import socket
-
-def socket_connect():
-    s = socket.create_connection(("google.com", 80))
-    s.settimeout(0.001)
-    s.recv(4096)
-
-@exall.exall(socket.socket.recv, socket.timeout, exall.ignore)
-def exall_socket_connect():
-    socket_connect()
-
-should_raise(socket_connect, socket.timeout)
-shouldnt_raise(exall_socket_connect)
+## import socket
+## 
+## def socket_connect():
+##     s = socket.create_connection(("google.com", 80))
+##     s.settimeout(0.001)
+##     s.recv(4096)
+## 
+## @exall.exall(socket.socket.recv, socket.timeout, exall.ignore)
+## def exall_socket_connect():
+##     socket_connect()
+## 
+## should_raise(socket_connect, socket.timeout)
+## shouldnt_raise(exall_socket_connect)
 
 ############## UNIT TEST results #################################
 
